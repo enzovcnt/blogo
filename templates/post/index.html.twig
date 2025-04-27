@@ -17,9 +17,45 @@
                 {% endif %}
             {% endif %}
             <p class="card-text">{{ post.content }}</p>
+            {% if post.likes %}
+                <button type="submit" class="btn btn-success" id="btnLike-{{ post.id }}" onclick="toggleLike({{ post.id }})">Aime</button>
+            {% else %}
+                <button type="submit" class="btn btn-primary" id="btnLike-{{ post.id }}" onclick="toggleLike({{ post.id }})">Aime</button>
+            {% endif %}
+            <p id="like-count-{{ post.id }}">{{ post.likes.count}}</p>
             <a href="{{ path('app_post_show', {id:post.id}) }}" class="btn btn-primary">Voir</a>
         </div>
     </div>
     {% endfor %}
+
+<script>
+    function toggleLike(postId) {
+        let button = document.getElementById('btnLike-' + postId);
+        let likeCountElement = document.getElementById('like-count-' + postId);
+
+
+        fetch('{{ path('app_like_post', {id: '__postId__'}) }}'.replace('__postId__', postId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.isLiked) {
+                    button.classList.remove('btn-primary');
+                    button.classList.add('btn-success');
+
+
+                } else {
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-primary');
+
+                }
+            })
+
+    }
+</script>
 
 {% endblock %}

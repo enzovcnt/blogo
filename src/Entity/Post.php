@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
@@ -17,9 +18,25 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\Length(
+        min:5,
+        max: 90,
+        minMessage:'Pas assez bg' ,
+        maxMessage: "Il y en a trop bg"
+    )]
+    #[Assert\IdenticalTo(
+        'choucroute'
+    )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\Length(
+        min:15,
+        minMessage:'Pas assez bg' ,
+    )]
+    #[Assert\IdenticalTo(
+        'pastèque'
+    )]
     private ?string $content = null;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
@@ -36,12 +53,22 @@ class Post
      * @var Collection<int, Comment>
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post', orphanRemoval: true)]
+    #[Assert\IdenticalTo(
+        'champignon'
+    )]
     private Collection $comments;
+
+    /**
+     * @var Collection<int, Like>
+     */
+    #[ORM\OneToMany(targetEntity: Like::class, mappedBy: 'post')]
+    private Collection $likes;
 
     public function __construct()
     {
         $this->image = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->likes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -143,5 +170,46 @@ class Post
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Like>
+     */
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
+
+    public function addLike(Like $like): static
+    {
+        if (!$this->likes->contains($like)) {
+            $this->likes->add($like);
+            $like->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLike(Like $like): static
+    {
+        if ($this->likes->removeElement($like)) {
+            // set the owning side to null (unless already changed)
+            if ($like->getPost() === $this) {
+                $like->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+
+    public function isLikedBy(User $user): bool
+    {
+        foreach ($this->likes as $like) {
+            if ($like->getAuthor() === $user) {
+                return true;
+            }
+        }
+        return false;
     }
 }

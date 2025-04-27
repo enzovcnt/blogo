@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
@@ -15,6 +16,9 @@ class Comment
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\IdenticalTo(
+        'champignon'
+    )]
     private ?string $content = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]

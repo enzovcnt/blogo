@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\Image;
 use App\Entity\Post;
+use App\Form\CommentType;
 use App\Form\ImageType;
 use App\Form\PostType;
 use App\Repository\PostRepository;
@@ -18,6 +20,11 @@ final class PostController extends AbstractController
     #[Route('/', name: 'app_posts')]
     public function index(PostRepository $postRepository): Response
     {
+        if(!$this->getUser())
+        {
+            return $this->redirectToRoute('app_login');
+        }
+
         return $this->render('post/index.html.twig', [
             'posts' => $postRepository->findAll(),
         ]);
@@ -26,6 +33,11 @@ final class PostController extends AbstractController
     #[Route('/new', name: 'app_post_new')]
     public function create(EntityManagerInterface $manager, Request $request): Response
     {
+
+        if(!$this->getUser())
+        {
+            return $this->redirectToRoute('app_login');
+        }
         $post = new Post();
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
@@ -44,8 +56,16 @@ final class PostController extends AbstractController
     #[Route('/post/{id}', name: 'app_post_show', priority: -1)]
     public function show(Post $post): Response
     {
+        if(!$this->getUser() || !$post)
+        {
+            return $this->redirectToRoute('app_login');
+        }
+        $comment = new Comment();
+        $form = $this->createForm(CommentType::class, $comment);
         return $this->render('post/show.html.twig', [
             'post' => $post,
+            'formComment' => $form->createView(),
+            'comment' => $comment,
         ]);
 
     }
@@ -53,6 +73,11 @@ final class PostController extends AbstractController
     #[Route('/post/{id}/edit', name: 'app_post_edit')]
     public function edit(Post $post, Request $request, EntityManagerInterface $manager): Response
     {
+
+        if(!$this->getUser() || !$post)
+        {
+            return $this->redirectToRoute('app_login');
+        }
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid()){
@@ -69,6 +94,10 @@ final class PostController extends AbstractController
     #[Route('/post/{id}/delete', name: 'app_post_delete')]
     public function delete(Post $post, EntityManagerInterface $manager): Response
     {
+        if(!$this->getUser() || !$post)
+        {
+            return $this->redirectToRoute('app_login');
+        }
         $manager->remove($post);
         $manager->flush();
         return $this->redirectToRoute('app_posts');

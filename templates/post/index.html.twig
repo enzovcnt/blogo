@@ -33,28 +33,24 @@
         let button = document.getElementById('btnLike-' + postId);
         let likeCountElement = document.getElementById('like-count-' + postId);
 
-
         fetch('{{ path('app_like_post', {id: '__postId__'}) }}'.replace('__postId__', postId), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-
         })
             .then(response => response.json())
             .then(data => {
                 if (data.isLiked) {
                     button.classList.remove('btn-primary');
                     button.classList.add('btn-success');
-
-
                 } else {
                     button.classList.remove('btn-success');
                     button.classList.add('btn-primary');
-
                 }
+                likeCountElement.textContent = data.likeCount;
             })
-
+            .catch(error => console.error('Erreur lors du like:', error));
     }
 </script>
 

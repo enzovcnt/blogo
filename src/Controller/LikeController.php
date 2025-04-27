@@ -36,9 +36,12 @@ final class LikeController extends AbstractController
         }
 
         $manager->flush();
+
+        $likeCount = count($post->getLikes());
+
         return $this->json([
             'isLiked' => $isLiked,
-
+            'likeCount' => $likeCount,
         ]);
     }
 }
